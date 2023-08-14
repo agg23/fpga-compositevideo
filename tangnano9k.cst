@@ -1,0 +1,22 @@
+IO_LOC "clk" 52;
+IO_PORT "clk" PULL_MODE=UP;
+IO_LOC "led[0]" 10;
+IO_LOC "led[1]" 11;
+IO_LOC "led[2]" 13;
+IO_LOC "led[3]" 14;
+IO_LOC "led[4]" 15;
+IO_LOC "led[5]" 16;
+
+IO_LOC "output_450ohm" 31;
+IO_PORT "output_450ohm" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+IO_LOC "output_900ohm" 32;
+IO_PORT "output_900ohm" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+
+IO_LOC "test_output" 49;
+IO_PORT "test_output" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+
+IO_LOC "button_a_n" 3;
+IO_PORT "button_a_n" PULL_MODE=DOWN;
+
+IO_LOC "button_b_n" 4;
+IO_PORT "button_b_n" PULL_MODE=DOWN;
