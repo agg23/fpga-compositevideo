@@ -109,34 +109,57 @@ module top (
         output_450ohm <= 0;
         output_900ohm <= 1;
 
-        pixel_cycles  <= pixel_cycles + 4'h1;
-
-        if (pixel_cycles == PIXEL_LENGTH[3:0]) begin
-          pixel_cycles <= 0;
-
-          pixel <= pixel + 8'h1;
-
-          if (pixel == 8'hFF) begin
-            // Start new line
-            new_scanline();
-          end
+        if (line_duration_counter >= 700 && line_duration_counter < 1000) begin
+          output_450ohm <= 1;
         end
+
+        // if (scanline[0] && line_duration_counter == 24'h1) begin
+        //   output_450ohm <= 1;
+        // end else if (~scanline[0] && line_duration_counter == 24'h1) begin
+        //   output_450ohm <= 0;
+        // end else begin
+        //   if (pixel_cycles == 4'h6) begin
+        //     output_450ohm <= ~output_450ohm;
+
+        //     pixel_cycles  <= 4'h0;
+        //   end else begin
+        //     pixel_cycles <= pixel_cycles + 4'h1;
+        //   end
+        // end
+
+        if (line_duration_counter == VSYNC_CYCLE_LENGTH[24:0]) begin
+          // Enter render
+          new_scanline();
+        end
+
+        // pixel_cycles  <= pixel_cycles + 4'h1;
+
+        // if (pixel_cycles == PIXEL_LENGTH[3:0]) begin
+        //   pixel_cycles <= 0;
+
+        //   pixel <= pixel + 8'h1;
+
+        //   if (pixel == 8'hFF) begin
+        //     // Start new line
+        //     new_scanline();
+        //   end
+        // end
       end
     endcase
   end
 
   reg [24:0] counter = 0;
 
-  always @(posedge clk) begin
-    if (counter > 0) begin
-      counter <= counter - 25'h1;
-    end else begin
-      counter <= CLK_SPEED;
-      // counter <= 25'd100;
+  // always @(posedge clk) begin
+  //   if (counter > 0) begin
+  //     counter <= counter - 25'h1;
+  //   end else begin
+  //     counter <= CLK_SPEED;
+  //     // counter <= 25'd100;
 
-      test_output <= ~test_output;
-    end
-  end
+  //     test_output <= ~test_output;
+  //   end
+  // end
 
   initial begin
     $display("PERIOD: %d", $rtoi(PERIOD));
