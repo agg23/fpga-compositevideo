@@ -6,10 +6,10 @@ module top (
 
     output wire [5:0] led,
 
-    output reg test_output,
+    output reg test_output = 0,
 
-    output reg output_450ohm,
-    output reg output_900ohm
+    output reg output_450ohm = 0,
+    output reg output_900ohm = 0
 );
 
   // function integer rtoi(input integer x);
@@ -26,6 +26,8 @@ module top (
 
   localparam VSYNC_LENGTH = 58_856;
 
+  localparam LINE_LENGTH = VSYNC_LENGTH + HSYNC_LENGTH;
+
   localparam PIXEL_COUNT = 256;
 
   // Generated values
@@ -34,7 +36,7 @@ module top (
   localparam HSYNC_CYCLE_LENGTH = $rtoi($ceil(HSYNC_LENGTH / PERIOD));
   localparam VSYNC_CYCLE_LENGTH = $rtoi($ceil(VSYNC_LENGTH / PERIOD));
 
-  localparam PIXEL_LENGTH = $rtoi($ceil(PIXEL_COUNT / PERIOD));
+  localparam PIXEL_LENGTH = $rtoi($ceil(LINE_LENGTH / PIXEL_COUNT / PERIOD));
 
   localparam STATE_VSYNC = 0;
   localparam STATE_VSYNC_CLEANUP = 1;
@@ -50,14 +52,22 @@ module top (
   reg [24:0] line_duration_counter = 0;
 
   task new_scanline();
-    if (scanline == 9'd247) begin
-      // VSync
-      state <= STATE_VSYNC;
-    end else begin
-      state <= STATE_HSYNC;
-    end
+    begin
+      if (scanline == 9'd247) begin
+        // VSync
+        state <= STATE_VSYNC;
+      end else begin
+        state <= STATE_HSYNC;
+      end
 
-    line_duration_counter <= 0;
+      line_duration_counter <= 0;
+
+      if (scanline == 9'd261) begin
+        scanline <= 0;
+      end else begin
+        scanline <= scanline + 9'h1;
+      end
+    end
   endtask
 
   always @(posedge clk) begin
