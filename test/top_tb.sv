@@ -7,7 +7,7 @@ module top_tb;
   wire output_900ohm;
 
   top top_uut (
-      .clk(clk),
+      .refclk(clk),
 
       .test_output(test_output),
 

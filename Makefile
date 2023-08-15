@@ -5,8 +5,8 @@ DEVICE=GW1NR-LV9QN88PC6/I5
 all: bitstream.fs
 
 # Synthesis
-synthesis.json: top.v tangnano9k.cst
-	yosys -p "read_verilog top.v; synth_gowin -noalu -nowidelut -nolutram -nodffe -top top -json synthesis.json"
+synthesis.json: top.v pll.v vendor/rpll.v vendor/GW1N-9C-dyn.vh tangnano9k.cst
+	yosys -p "read_verilog top.v vendor/GW1N-9C-dyn.vh pll.v vendor/rpll.v; synth_gowin -noalu -nowidelut -nolutram -nodffe -top top -json synthesis.json"
 
 # Place and Route
 pnr.json: synthesis.json
