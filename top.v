@@ -21,7 +21,7 @@ module top (
   // `define CEIL(x) ((rtoi(x) > x) ? rtoi(x) : rtoi(x) + 1)
 
 
-  localparam CLK_SPEED = 172_125_000;
+  localparam CLK_SPEED = 85_500_000;
 
   // Lengths are specified in nanoseconds
   localparam HSYNC_LENGTH = 4_700;
@@ -39,7 +39,7 @@ module top (
   localparam VSYNC_CYCLE_LENGTH = $rtoi($ceil(VSYNC_LENGTH / PERIOD));
 
   // localparam PIXEL_LENGTH = $rtoi($ceil(LINE_LENGTH / PIXEL_COUNT / PERIOD));
-  localparam PIXEL_LENGTH = 32;
+  localparam PIXEL_LENGTH = 16;
 
   localparam STATE_VSYNC = 0;
   localparam STATE_VSYNC_CLEANUP = 1;
@@ -65,6 +65,9 @@ module top (
       if (scanline == 9'd247) begin
         // VSync
         state <= STATE_VSYNC;
+
+        x_square_pixel <= 0;
+        y_square_pixel <= 0;
       end else begin
         state <= STATE_HSYNC;
       end
@@ -199,8 +202,8 @@ module top (
   //   if (counter > 0) begin
   //     counter <= counter - 25'h1;
   //   end else begin
-  //     counter <= CLK_SPEED;
-  //     // counter <= 25'd100;
+  //     // counter <= CLK_SPEED;
+  //     counter <= 25'd1000;
 
   //     test_output <= ~test_output;
   //   end
