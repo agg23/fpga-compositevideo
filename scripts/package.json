@@ -1,0 +1,15 @@
+{
+  "name": "image",
+  "version": "1.0.0",
+  "description": "Image",
+  "main": "index.js",
+  "scripts": {
+    "run": "node image.js"
+  },
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "get-pixels": "^3.3.3"
+  }
+}

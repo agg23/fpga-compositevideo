@@ -2,3 +2,6 @@ bitstream.fs
 synthesis.json
 
 sim/
+sim2/
+impl/
+node_modules/
