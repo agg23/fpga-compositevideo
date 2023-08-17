@@ -8,7 +8,7 @@ module readonlyflash_tb;
 
   wire [7:0] q;
 
-  reg flash_si = 0;
+  reg flash_so = 0;
 
   readonlyflash flash_uut (
       .clk(clk),
@@ -19,7 +19,7 @@ module readonlyflash_tb;
 
       .q(q),
 
-      .flash_si(flash_si)
+      .flash_so(flash_so)
   );
 
   always begin
@@ -39,16 +39,16 @@ module readonlyflash_tb;
 
     rd = 0;
 
-    @(posedge clk iff flash_uut.state == 3);
+    @(posedge clk iff flash_uut.state == 4);
 
     for (int i = 0; i < 40; i += 1) begin
-      flash_si = shifter[39];
+      flash_so = shifter[39];
       shifter  = {shifter[38:0], 1'b0};
       #4;
     end
 
     halt_rd  = 1;
-    flash_si = 1;
+    flash_so = 1;
 
     #2;
 
@@ -56,7 +56,7 @@ module readonlyflash_tb;
 
     #2;
 
-    flash_si = 0;
+    flash_so = 0;
   end
 
 endmodule
