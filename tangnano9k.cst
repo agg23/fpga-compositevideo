@@ -7,6 +7,15 @@ IO_LOC "led[3]" 14;
 IO_LOC "led[4]" 15;
 IO_LOC "led[5]" 16;
 
+IO_LOC "debug[0]" 56;
+IO_PORT "debug[0]" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+IO_LOC "debug[1]" 57;
+IO_PORT "debug[1]" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+IO_LOC "debug[2]" 68;
+IO_PORT "debug[2]" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+IO_LOC "debug[3]" 69;
+IO_PORT "debug[3]" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+
 IO_LOC "output_450ohm" 31;
 IO_PORT "output_450ohm" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
 IO_LOC "output_900ohm" 32;
@@ -16,7 +25,7 @@ IO_LOC "test_output" 49;
 IO_PORT "test_output" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
 
 IO_LOC "button_a_n" 3;
-IO_PORT "button_a_n" PULL_MODE=DOWN;
+IO_PORT "button_a_n" PULL_MODE=UP;
 
 IO_LOC "button_b_n" 4;
-IO_PORT "button_b_n" PULL_MODE=DOWN;
+IO_PORT "button_b_n" PULL_MODE=UP;
