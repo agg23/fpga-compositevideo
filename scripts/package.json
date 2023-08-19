@@ -4,12 +4,16 @@
   "description": "Image",
   "main": "index.js",
   "scripts": {
-    "run": "node image.js"
+    "image": "node image.js",
+    "solve": "ts-node solver.ts"
   },
-  "type": "module",
   "author": "",
   "license": "MIT",
   "dependencies": {
     "get-pixels": "^3.3.3"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
   }
 }
