@@ -22,21 +22,31 @@ getPixels(inputPath, (err, pixels) => {
 
   const [width, height] = pixels.shape;
 
-  let outputBuffer = Buffer.alloc(width * height * dataWidth);
+  let outputBuffer = Buffer.alloc((width * height * dataWidth) / 2);
 
-  for (let x = 0; x < width; x++) {
-    for (let y = 0; y < height; y++) {
+  let word = 0;
+  let setLow = false;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
       const red = pixels.get(x, y, 0);
       // const green = pixels.get(x, y, 1);
       // const blue = pixels.get(x, y, 2);
       // const alpha = pixels.get(x, y, 3);
 
       // Use only red channel
-      outputBuffer[y * width + x] = red;
+      // outputBuffer[y * width + x] = red;
+      if (setLow) {
+        word |= red / 16;
+
+        outputBuffer[Math.floor((y * width + x) / 2)] = word;
+      } else {
+        word = (red / 16) << 4;
+      }
+
+      setLow = !setLow;
     }
   }
-
-  console.log(pixels);
 
   writeFileSync(outputPath, outputBuffer, { flag: "w" });
   console.log(`Wrote output file ${outputPath}`);

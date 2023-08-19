@@ -1,0 +1,17 @@
+[General]
+ipc_version=4
+file=gowin_sp
+module=Gowin_SP
+target_device=gw1nr9c-004
+type=ram_sp
+version=3.0
+
+[Config]
+BYTE_SIZE=0
+DEPTH=30720
+LANG=0
+MEM_FILE=../../scripts/nabla4bit.hex
+READ=0
+RESET_MODE=true
+WIDTH=4
+WRITE=0

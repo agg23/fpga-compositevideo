@@ -1,6 +1,7 @@
 bitstream.fs
 synthesis.json
 
+scripts/out/
 sim/
 sim2/
 impl/
