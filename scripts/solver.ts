@@ -5,13 +5,60 @@ const seriesResistance = 75;
 const voltage = 3.3;
 
 const maxResistor = 2000;
-const resistorIncrement = 10;
+// const resistorIncrement = 10;
+
+type ResistorConfig =
+  | {
+      type: "allValues";
+      increment: number;
+    }
+  | {
+      type: "setValues";
+      values: number[];
+    };
+
+// Do a full search over the searchspace (stepping by 10)
+// const config: ResistorConfig = {
+//   type: "allValues",
+//   increment: 10,
+// } as ResistorConfig;
+
+// Search for specific resistor values
+const config: ResistorConfig = {
+  type: "setValues",
+  values: [
+    10, 22, 47, 100, 150, 200, 220, 270, 330, 470, 510, 680, 1000, 2000, 2200,
+    3300, 4700, 5100,
+  ],
+} as ResistorConfig;
 
 // Our voltages are 0-1V, and we want to solve for values >0
 const voltageLevels = Math.pow(2, 3);
 
 let bestMatchValues: number[] | undefined = undefined;
 let bestDiff = Number.MAX_SAFE_INTEGER;
+
+const resistorIterator = (
+  variableValues: number[],
+  closure: (variableValues: number[]) => void
+) => {
+  switch (config.type) {
+    case "allValues": {
+      for (let i = 0; i < maxResistor; i += config.increment) {
+        closure([...variableValues, i]);
+      }
+
+      break;
+    }
+    case "setValues": {
+      for (const resistorValue of config.values) {
+        closure([...variableValues, resistorValue]);
+      }
+
+      break;
+    }
+  }
+};
 
 const buildActiveBitEquation = (values: number[], activeBits: number) => {
   const activeValues: number[] = [];
@@ -50,13 +97,13 @@ const buildActiveBitEquation = (values: number[], activeBits: number) => {
   return (groundedPath / (groundedPath + activeParallel)) * voltage;
 };
 
-const processValues = (values: number[], childrenCount: number) => {
+const processValues = (variableValues: number[], childrenCount: number) => {
   if (childrenCount === 0) {
     // Base case, evaluate this last level
     const results: number[] = [];
 
     for (let i = 0; i < voltageLevels; i++) {
-      const result = buildActiveBitEquation(values, i);
+      const result = buildActiveBitEquation(variableValues, i);
 
       results.push(result);
     }
@@ -77,29 +124,37 @@ const processValues = (values: number[], childrenCount: number) => {
 
     if (totalDiff < bestDiff) {
       bestDiff = totalDiff;
-      bestMatchValues = values;
+      bestMatchValues = variableValues;
     }
   } else {
     // Continue recursing
-    for (let i = 0; i < maxResistor; i += resistorIncrement) {
-      processValues([...values, i], childrenCount - 1);
-    }
+    resistorIterator(variableValues, (values) => {
+      processValues(values, childrenCount - 1);
+    });
   }
 };
 
-for (let a = 0; a < maxResistor; a += resistorIncrement) {
+resistorIterator([], (values) => {
   // At least one resistor value
-  console.log("Processing step", a);
+  console.log("Processing step", values[0]);
 
-  processValues([a], bitCount - 1);
-}
+  processValues(values, bitCount - 1);
+});
 
 console.log("Best matches:", bestMatchValues);
 console.log("Diff:", bestDiff);
 
 for (let i = 0; i < voltageLevels; i++) {
   const result = buildActiveBitEquation(bestMatchValues, i);
-  console.log(`${i}: ${result}`);
+
+  const activeResistors = bestMatchValues.filter((_, index) => {
+    return (i & (1 << index)) != 0;
+  });
+
+  const resistorString =
+    activeResistors.length > 0 ? `${activeResistors.join(", ")}` : "None";
+
+  console.log(`${resistorString}: ${result}`);
 }
 
 // console.log(buildActiveBitEquation([450, 900], 1));
