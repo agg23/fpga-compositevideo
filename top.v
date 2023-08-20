@@ -6,8 +6,9 @@ module top (
 
     output wire [5:0] led,
 
-    output reg output_450ohm = 0,
-    output reg output_900ohm = 0
+    output reg output_270ohm = 0,
+    output reg output_330ohm = 0,
+    output reg output_470ohm = 0
 );
 
   wire clk;
@@ -67,33 +68,43 @@ module top (
   );
 
   always @(posedge clk) begin
-    output_450ohm <= 0;
-    output_900ohm <= 0;
+    output_270ohm <= 0;
+    output_330ohm <= 0;
+    output_470ohm <= 0;
 
     if (render) begin
-      if (pixel > 4'd10) begin
-        // Brightest
-        output_450ohm <= 1;
-        output_900ohm <= 1;
-      end else if (pixel > 4'd5) begin
-        // Middle
-        output_450ohm <= 1;
-        output_900ohm <= 0;
+      if (pixel >= 4'd12) begin
+        // Brightest, 1
+        output_270ohm <= 1;
+        output_330ohm <= 1;
+      end else if (pixel >= 4'd9) begin
+        // 0.87
+        output_270ohm <= 1;
+        output_470ohm <= 1;
+      end else if (pixel >= 4'd6) begin
+        // 0.76
+        output_330ohm <= 1;
+        output_470ohm <= 1;
+      end else if (pixel >= 4'd4) begin
+        // 0.55
+        output_270ohm <= 1;
+      end else if (pixel >= 4'd2) begin
+        // 0.45
+        output_330ohm <= 1;
       end else begin
-        // Darkest
-        output_450ohm <= 0;
-        output_900ohm <= 1;
+        // Darkest, 0.32
+        output_470ohm <= 1;
       end
 
       if (vblank || hblank) begin
         // Default to black
-        output_450ohm <= 0;
-        output_900ohm <= 1;
+        output_270ohm <= 0;
+        output_330ohm <= 0;
+        output_470ohm <= 1;
 
         if (vsync || hsync) begin
           // Sync level
-          output_450ohm <= 0;
-          output_900ohm <= 0;
+          output_470ohm <= 0;
         end
       end
     end

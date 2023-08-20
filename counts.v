@@ -31,7 +31,9 @@ module counts (
   assign vblank = y >= HEIGHT;
   assign hblank = x >= WIDTH;
 
-  assign hsync = x >= WIDTH && x < WIDTH + 10'd25;
+  // This is 15 pixels longer than the NES does
+  // This appeared to center the image better on both displays I tested
+  assign hsync = x >= WIDTH && x < WIDTH + 10'd40;
 
   assign vsync = y == HEIGHT + 10'h5 && x < DISPLAY_WIDTH + 10'd62;
 
