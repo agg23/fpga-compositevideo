@@ -1,4 +1,8 @@
-const bitCount = 2;
+const munkres = require("munkres-js");
+
+const bitCount = 3;
+const voltage = 3.3;
+// const voltage = 5;
 
 // 75 Ohms built into the TV
 const seriesResistance = 75;
@@ -9,8 +13,6 @@ const blackVoltage = 0.3;
 const whiteVoltage = 1.0;
 
 const colorRangeTolerance = 0.1;
-
-const voltage = 3.3;
 
 const maxResistor = 2000;
 // const resistorIncrement = 10;
@@ -26,19 +28,19 @@ type ResistorConfig =
     };
 
 // Do a full search over the searchspace (stepping by 10)
-const config: ResistorConfig = {
-  type: "allValues",
-  increment: 10,
-} as ResistorConfig;
+// const config: ResistorConfig = {
+//   type: "allValues",
+//   increment: 10,
+// } as ResistorConfig;
 
 // Search for specific resistor values
-// const config: ResistorConfig = {
-//   type: "setValues",
-//   values: [
-//     10, 22, 47, 100, 150, 200, 220, 270, 330, 470, 510, 680, 1000, 2000, 2200,
-//     3300, 4700, 5100,
-//   ],
-// } as ResistorConfig;
+const config: ResistorConfig = {
+  type: "setValues",
+  values: [
+    10, 22, 47, 100, 150, 200, 220, 270, 330, 470, 510, 680, 1000, 2000, 2200,
+    3300, 4700, 5100,
+  ],
+} as ResistorConfig;
 
 const numberOfVoltageLevels = Math.pow(2, bitCount);
 
@@ -60,7 +62,7 @@ const resistorIterator = (
 ) => {
   switch (config.type) {
     case "allValues": {
-      for (let i = 0; i < maxResistor; i += config.increment) {
+      for (let i = config.increment; i < maxResistor; i += config.increment) {
         closure([...variableValues, i]);
       }
 
@@ -113,6 +115,22 @@ const buildActiveBitEquation = (values: number[], activeBits: number) => {
   return (groundedPath / (groundedPath + activeParallel)) * voltage;
 };
 
+const distributedExpectedPointsWithinRange = (
+  pointCount: number,
+  range: { min: number; max: number }
+): number[] => {
+  const points: number[] = [];
+
+  const diff = range.max - range.min;
+  const segmentSize = diff / (pointCount + 1);
+
+  for (let i = 0; i <= pointCount + 1; i++) {
+    points.push(segmentSize * i + range.min);
+  }
+
+  return points;
+};
+
 const processValues = (variableValues: number[], childrenCount: number) => {
   if (childrenCount !== 0) {
     // Continue recursing
@@ -126,7 +144,8 @@ const processValues = (variableValues: number[], childrenCount: number) => {
   // Base case, evaluate this last level
   const results: number[] = [];
 
-  for (let i = 0; i < numberOfVoltageLevels; i++) {
+  // Ignore the off case
+  for (let i = 1; i < numberOfVoltageLevels; i++) {
     const result = buildActiveBitEquation(variableValues, i);
 
     results.push(result);
@@ -134,42 +153,74 @@ const processValues = (variableValues: number[], childrenCount: number) => {
 
   results.sort((a, b) => a - b);
 
-  let totalDiff = 0;
+  let processBestActiveBits: number[] | undefined = undefined;
+  let processBestDiff = Number.MAX_SAFE_INTEGER;
 
-  // Skip 0
-  for (let i = 1; i < numberOfVoltageLevels; i++) {
-    const result = results[i];
+  const m = new munkres.Munkres();
 
-    if (i == 1 && blackVoltage - result > colorRangeTolerance) {
-      // Reject this match, as it's too far out of black spec
-      return;
-    } else if (
-      i == numberOfVoltageLevels - 1 &&
-      result - whiteVoltage > colorRangeTolerance
-    ) {
-      // Reject this match, as it's too far out of white spec
-      return;
+  // Attempt matching with a different number of usable elements
+  // There must be at least 1 element in the result, and 2 matches must be black and white voltages
+  for (
+    let pointCount = 1;
+    pointCount < numberOfVoltageLevels - 2;
+    pointCount++
+  ) {
+    const points = distributedExpectedPointsWithinRange(pointCount, {
+      min: blackVoltage,
+      max: whiteVoltage,
+    });
+
+    // Find the best match for each of these evenly distributed points in the resistor results
+    const selectedActiveBits: number[] = [];
+    let selectedDiff = 0;
+
+    // Build cost matrix. Munkres-JS will automatically 0 pad to make it square
+    const matrix: Array<number[]> = [];
+
+    for (const point of points) {
+      const row: number[] = [];
+
+      for (const voltageResult of results) {
+        // Drift with this resistor combination to our target voltage
+        const distance = Math.abs(point - voltageResult);
+
+        row.push(distance);
+      }
+
+      matrix.push(row);
     }
 
-    if (result < blackVoltage) {
-      // Manually score with a small error
-      totalDiff += 0.1;
+    const result = m.compute(matrix);
 
-      continue;
+    for (const tuple of result) {
+      const [row, column] = tuple;
+
+      const diff = matrix[row][column];
+      selectedDiff += diff;
+
+      // Push selected variable values. These are offset active bits because of 0
+      const variableActiveBits = column + 1;
+      selectedActiveBits.push(variableActiveBits);
     }
 
-    // Compare result at this index to the intended voltage level at this index
-    const expectedLevel = voltageLevels[i];
-    const diff = Math.abs(result - expectedLevel);
+    // TODO: This should check all possible allocations of point to generated resistor value to prevent local maxima
 
-    totalDiff += diff;
+    // Compare average diff so that more variables selected doesn't mean more diff
+    selectedDiff = selectedDiff / pointCount;
+
+    if (selectedDiff < processBestDiff) {
+      processBestActiveBits = selectedActiveBits;
+      processBestDiff = selectedDiff;
+    }
   }
 
-  if (totalDiff < bestDiff) {
-    bestDiff = totalDiff;
+  if (processBestDiff < bestDiff) {
+    bestDiff = processBestDiff;
     bestMatchValues = variableValues;
   }
 };
+
+// processValues([450, 900], 0);
 
 resistorIterator([], (values) => {
   // At least one resistor value
@@ -199,11 +250,3 @@ for (let i = 0; i < numberOfVoltageLevels; i++) {
 
   console.log(`${resistorString}: ${result}`);
 }
-
-// console.log(buildActiveBitEquation([450, 900], 1));
-// console.log(buildActiveBitEquation([450, 900], 2));
-// console.log(buildActiveBitEquation([450, 900], 3));
-
-// console.log(buildActiveBitEquation([450, 900, 1500], 7));
-
-// processValues([350, 540, 270], 0);

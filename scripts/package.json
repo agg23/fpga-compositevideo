@@ -10,7 +10,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "get-pixels": "^3.3.3"
+    "get-pixels": "^3.3.3",
+    "munkres-js": "^1.2.2"
   },
   "devDependencies": {
     "ts-node": "^10.9.1",
