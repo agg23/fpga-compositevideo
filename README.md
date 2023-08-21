@@ -1,4 +1,4 @@
-# FPGA Composite MTSC Video
+# FPGA Composite NTSC Video
 
 ![](../assets/nesdisplay.png)
 
