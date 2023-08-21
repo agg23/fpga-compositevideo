@@ -1,0 +1,3 @@
+video-out
+
+Add information about your core here.
